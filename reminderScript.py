@@ -1,29 +1,38 @@
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 
 reminderSent = False  
 
-def messageReminder():
-    global reminderSent 
-    today = datetime.now()
+def messageReminder(name, number, reminderDate):
+    global reminderSent
 
-    if today.day == 4 and not reminderSent:
+    today = datetime.now()
+    reminderDate = datetime.strptime(reminderDate, '%Y-%m-%d')
+
+    if today.date() == reminderDate.date() and not reminderSent:
         resp = requests.post('http://textbelt.com/text', {
-            'phone': 'XXX-XXX-XXXX', # Enter number
-            'message': 'Hello _____! Reminder to PAY your CREDIT :)', # Enter message
+            'phone': number,                                            # number
+            'message': f'Hello {name}! Reminder to PAY your CREDIT :)', # message
             'key': 'textbelt'
         })
 
         print(resp.json())
 
-        # Update flag
         reminderSent = True
 
-        # Checks for time remaing on next day, sleeps accordingly
-        tomorrow = today.replace(day=28)
+        tomorrow = today + timedelta(days=1)
         sleep_time = (tomorrow - today).total_seconds()
         time.sleep(sleep_time)
 
-while True:
-    messageReminder() # Run 
+def main():
+    while True:
+        # user input 
+        name = input("Enter your name: ")
+        number = input("Enter your phone number: ")
+        reminderDate = input("Enter the reminder date (YYYY-MM-DD): ")
+
+        messageReminder(name, number, reminderDate)
+
+if __name__ == "__main__":
+    main()
